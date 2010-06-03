@@ -1,0 +1,69 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Installation file for ePay.bg Ubercart payment module.
+ *
+ * @author Martin Martinov <matix.bg@gmail.com>
+ */
+
+/**
+ * Implementation of hook_schema().
+ */
+function uc_epaybg_schema() {
+  $schema = array();
+
+  $schema['uc_epaybg_transaction'] = array(
+    'description' => t('Logs ePay.bg payment transactions.'),
+    'fields' => array(
+      'txn_id' => array(
+        'description' => t('The order ID'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'amount' => array(
+        'description' => t('The payment amount from ePay.bg'),
+        'type' => 'numeric',
+        'size' => 'normal',
+        'not null' => TRUE,
+        'default' => 0,
+        'precision' => 10,
+        'scale' => 2,
+      ),
+      'pay_time' => array(
+        'description' => t('The payment timestamp'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'description' => array(
+        'description' => t('The description from ePay.bg'),
+        'type' => 'text',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'primary key' => array('txn_id'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function uc_epaybg_install() {
+  drupal_install_schema('uc_epaybg');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function uc_epaybg_uninstall() {
+  drupal_uninstall_schema('uc_epaybg');
+  db_query("DELETE FROM {variable} WHERE name LIKE 'uc_epaybg_%%'");
+}

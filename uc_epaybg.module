@@ -1,0 +1,309 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * ePay.bg Ubercart payment module.
+ * 
+ * @author Martin Martinov <matix.bg@gmail.com>
+ */
+
+define('UC_EPAYBG_ACTION_URL', 'https://epay.bg/');
+define('UC_EPAYBG_ACTION_DEMO_URL', 'https://devep2.datamax.bg/ep2/epay2_demo/');
+
+/**
+ * Implementation of hook_theme().
+ */
+function uc_epaybg_theme() {
+  return array(
+    'uc_epaybg_payment_method_title' => array(
+      'arguments' => array('title' => NULL),
+    )
+  );
+}
+
+/**
+ * Implementation of hook_menu()
+ */
+function uc_epaybg_menu() {
+  $items = array();
+
+  $items['uc_epaybg/done'] = array(
+    'title'           => 'ePay.bg payment done',
+    'page callback'   => 'uc_epaybg_payment_done',
+    'access callback' => 'uc_epaybg_access',
+    'type'            => MENU_CALLBACK,
+    'file'            => 'uc_epaybg.pages.inc',
+  );
+
+  $items['uc_epaybg/cancel'] = array(
+    'title'           => 'ePay.bg payment cancelled',
+    'page callback'   => 'uc_epaybg_payment_cancel',
+    'access callback' => TRUE,
+    'type'            => MENU_CALLBACK,
+    'file'            => 'uc_epaybg.pages.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Make sure ePay.bg always has access.
+ *
+ * @return bool
+ */
+function uc_epaybg_access() {
+  return TRUE;
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function uc_epaybg_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'uc_cart_checkout_review_form' && ($order_id = intval($_SESSION['cart_order'])) > 0) {
+    $order = uc_order_load($order_id);
+    if ($order->payment_method == 'uc_epaybg') {
+      unset($form['submit']);
+      $form['#prefix'] = '<table style="display: inline; padding-top: 1em;"><tr><td>';
+      $form['#suffix'] = '</td><td>'. drupal_get_form('uc_epaybg_submit_form', $order) .'</td></tr></table>';
+    }
+  }
+}
+
+/**
+ * Implementation of hook_payment_method().
+ */
+function uc_epaybg_payment_method() {
+  $methods = array();
+
+  $methods[] = array(
+    'id' => 'uc_epaybg',
+    'name' => t('ePay.bg'),
+    'title' => theme('uc_epaybg_payment_method_title', t('ePay.bg')),
+    'desc' => t('Redirect users to submit payments through ePay.bg.'),
+    'callback' => 'uc_payment_method_epaybg',
+    'weight' => 1,
+    'checkout' => TRUE, // check this
+    'no_gateway' => TRUE,
+  );
+
+  return $methods;
+}
+
+/**
+ * Ubercart payment method callback
+ *
+ * @param string $op
+ * @param array $arg1
+ * @return mixed
+ */
+function uc_payment_method_epaybg($op, &$arg1) {
+  switch ($op) {
+    case 'order-view':
+      $txn_id = db_result(
+        db_query(
+          "SELECT txn_id FROM {uc_epaybg_transaction} WHERE order_id = %d ORDER BY pay_time ASC",
+          $arg1->order_id)
+        );
+      if (empty($txn_id)) {
+        $txn_id = t('Unknown Transaction ID');
+      }
+      return t('Transaction ID:<br />@txn_id', array('@txn_id' => $txn_id));
+    case 'settings':
+      $form['uc_epaybg_action_url'] = array(
+        '#type'          => 'textfield',
+        '#title'         => t('Action URL'),
+        '#default_value' => variable_get('uc_epaybg_action_url', UC_EPAYBG_ACTION_URL),
+        '#description'   => t(
+          "The default action URL is: !url. If you want to test in demo mode use !demo_url.",
+          array('!url' => UC_EPAYBG_ACTION_URL, '!demo_url' => UC_EPAYBG_ACTION_DEMO_URL)),
+        '#required'       => TRUE,
+      );
+      $form['uc_epaybg_min'] = array(
+        '#type'           => 'textfield',
+        '#title'          => t('MIN'),
+        '#default_value'  => variable_get('uc_epaybg_min', ''),
+        '#description'    => t("Merchant Identification Number (you must get this from your merchant account in ePay.bg)."),
+        '#required'       => TRUE,
+      );
+      $form['uc_epaybg_secret_key'] = array(
+        '#type'           => 'textfield',
+        '#title'          => t('Secret key'),
+        '#default_value'  => variable_get('uc_epaybg_secret_key', ''),
+        '#description'    => t("Secret key (you must get this from your merchant account in ePay.bg)."),
+        '#required'       => TRUE,
+      );
+      $form['uc_epaybg_email'] = array(
+        '#type'           => 'textfield',
+        '#title'          => t('Email'),
+        '#default_value'  => variable_get('uc_epaybg_email', ''),
+        '#description'    => t("Merchant email (as entered in your ePay.bg account)."),
+        '#required'       => TRUE,
+      );
+      $form['uc_epaybg_url_ok'] = array(
+        '#type'           => 'textfield',
+        '#title'          => t('URL OK'),
+        '#default_value'  => variable_get('uc_epaybg_url_ok', url('user/_uid_/orders', array('absolute' => TRUE))),
+        '#description'    => t("_uid_ = user id of current account."),
+      );
+      $form['uc_epaybg_url_cancel'] = array(
+        '#type'           => 'textfield',
+        '#title'          => t('URL CANCEL'),
+        '#default_value'  => variable_get('uc_epaybg_url_cancel', url('uc_epaybg/cancel', array('absolute' => TRUE))),
+        '#description'    => t('Do not change this unless you know exactly what you are doing.'),
+      );
+      $form['uc_epaybg_url_done'] = array(
+        '#type'           => 'textfield',
+        '#title'          => t('URL DONE'),
+        '#attributes'     => array('readonly' => 'TRUE'),
+        '#value'          => variable_get('uc_epaybg_url_done', url('uc_epaybg/done', array('absolute' => TRUE))),
+        '#description'    => t("Paste this url in the field 'URL за известяване' in your ePay.bg merchant account."),
+      );
+      $form['uc_epaybg_exp_date_hours'] = array(
+        '#type'           => 'textfield',
+        '#title'          => t('Payment Expiration Time'),
+        '#value'          => variable_get('uc_epaybg_exp_date_hours', 1440),
+        '#description'    => t("After how many hours should the payment request expire. 1440 hours are 2 months."),
+      );
+      $form['uc_epaybg_currency'] = array(
+        '#type'           => 'select',
+        '#title'          => t('Currency'),
+        '#options'        => array(
+          'BGN' => 'BGN',
+          'USD' => 'USD',
+          'EUR' => 'EUR'
+        ),
+        '#default_value'  =>  variable_get('uc_epaybg_currency', ''),
+        '#description'    => t("Currency in ePay.bg system."),
+      );
+      $form['uc_epaybg_rate'] = array(
+        '#type'           => 'textfield',
+        '#title'          => t('Rate to site currency'),
+        '#default_value'  => variable_get('uc_epaybg_rate', '1.00'),
+        '#description'    => t("Please enter ePay.bg rate according to site currency."),
+      );
+      return $form;
+    default:
+      break;
+  }
+}
+
+function uc_epaybg_submit_form(&$form_state, $order) {
+  global $user;
+  $hash_hmac = _get_hash_hmac();
+
+  $amount = $order->order_total * variable_get('uc_epaybg_rate', '1.00');
+  $s_data = array('amount' => $amount);
+  $description = serialize($s_data);
+  $result = db_query(
+    "SELECT COUNT(txn_id) FROM {uc_epaybg_transaction} WHERE txn_id = %d",
+    $order->order_id
+  );
+  if (db_result($result)) {
+    db_query(
+      "UPDATE {uc_epaybg_transaction} SET description = '%s' WHERE txn_id = %d",
+      $description,
+      $order->order_id
+    );
+  }
+  else {
+    db_query(
+      "INSERT INTO {uc_epaybg_transaction} (txn_id, description) VALUES (%d, '%s')",
+      $order->order_id,
+      $description
+    );
+  }
+
+  $secret     = variable_get('uc_epaybg_secret_key', ''); // Secret key
+  $min        = variable_get('uc_epaybg_min', '');        // Min (CIN in personal data of the merchant)
+  $email      = variable_get('uc_epaybg_email', '');      // Email
+  $invoice    = $order->order_id;                         // Invoice
+  $sum        = $amount;                                  // Ammount
+  $exp_time   = time() + (variable_get('uc_epaybg_exp_date_hours', 1440) * 3600);
+  $exp_date   = date('d.m.Y H:i:s', $exp_time);           // Expiration date
+  $descr      = t(
+    'Payment order number - %num, amount - %amount',      // Description
+    array('%num' => $order->order_id, '%amount' => $amount));
+  $currency   = variable_get('uc_epaybg_currency', '');   // Currency
+  variable_set('post_resp', $currency);
+
+$data = <<<DATA
+MIN={$min}
+EMAIL={$email}
+INVOICE={$invoice}
+AMOUNT={$sum}
+CURRENCY={$currency} 
+EXP_TIME={$exp_date}
+DESCR={$descr}
+ENCODING=utf-8
+DATA;
+
+  $ENCODED  = base64_encode($data);
+  $CHECKSUM = $hash_hmac('sha1', $ENCODED, $secret);
+  $form['PAGE'] = array(
+    '#type' => 'hidden',
+    '#value' => 'paylogin',
+  );
+  $form['ENCODED'] = array(
+    '#type' => 'hidden',
+    '#value' => $ENCODED,
+  );
+  $form['CHECKSUM'] = array(
+    '#type' => 'hidden',
+    '#value' => $CHECKSUM,
+  );	  
+  $form['URL_OK'] = array(
+    '#type' => 'hidden',
+    '#value' => str_replace('_uid_', $user->uid, variable_get('uc_epaybg_url_ok', '')),
+  );
+  $form['URL_CANCEL'] = array(
+    '#type' => 'hidden',
+    '#value' => variable_get('uc_epaybg_url_cancel', ''),
+  );
+  $form['#action'] = variable_get('uc_epaybg_action_url', UC_EPAYBG_ACTION_URL);
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Place your order'),
+  );
+
+  return $form;
+}
+
+function theme_uc_epaybg_payment_method_title($title) {
+  $path  = base_path() . drupal_get_path('module', 'uc_epaybg');
+
+  return $title .'<br /><img src="'. $path .'/images/epay.png" style="position: relative; left: 2.5em;" />';
+}
+
+/**
+ * Define a replacement if the hash_hmac() function does not exists.
+ */
+function _get_hash_hmac() {
+  $hash_hmac = 'hash_hmac';
+  if (!function_exists($hash_hmac)) {
+    $hash_hmac = 'hmac';
+  }
+
+  return $hash_hmac;
+}
+if (!function_exists('hash_hmac')) {
+  function hmac($algo, $data, $passwd) {
+    /* md5 and sha1 only */
+    $algo = strtolower($algo);
+    $p = array(
+      'md5' => 'H32',
+      'sha1' => 'H40',
+    );
+    if (strlen($passwd) > 64) {
+      $passwd = pack($p[$algo], $algo($passwd));
+    }
+    if (strlen($passwd) < 64) {
+      $passwd = str_pad($passwd, 64, chr(0));
+    }
+
+    $ipad = substr($passwd, 0, 64) ^ str_repeat(chr(0x36), 64);
+    $opad = substr($passwd, 0, 64) ^ str_repeat(chr(0x5C), 64);
+
+    return ($algo($opad . pack($p[$algo], $algo($ipad .$data))));
+  }
+}

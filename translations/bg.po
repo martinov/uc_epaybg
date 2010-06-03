@@ -1,0 +1,178 @@
+# $Id$
+#
+# Bulgarian translation of uc_epaybg
+# Copyright 2010 Martin Martinov <matix.bg@gmail.com>
+# Generated from files:
+#  uc_epaybg.pages.inc: n/a
+#  uc_epaybg.module: n/a
+#  uc_epaybg.info: n/a
+#  uc_epaybg.install: n/a
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: uc_epaybg 6.x.1.x-dev\n"
+"POT-Creation-Date: 2010-05-30 12:29+0300\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: Martin Martinov <matix.bg@gmail.com>\n"
+"Language-Team: Bulgarian <matix.bg@gmail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: uc_epaybg.pages.inc:50
+msgid "Payment from order number %order_id was accepted. STAN: !stan; pay_date: !pay_date; BCODE: !bcode;"
+msgstr "Плащане за поръчка номер %order_id беше получено. STAN: !stan; pay_date: !pay_date; BCODE: !bcode;"
+
+#: uc_epaybg.pages.inc:62
+msgid "A payment with Transaction ID: @txn_id for @amnt has been accepted."
+msgstr "Плащане с ID на транзакция: @txn_id за @amnt беше получено."
+
+#: uc_epaybg.pages.inc:85
+msgid "Your ePay.bg payment was cancelled. Please feel free to continue shopping or contact us for assistance."
+msgstr "Вашето плащане чрез ePay.bg беше отказано. Моля, чувствайте се поканени да продължите пазаруването си или да се свържете с нас."
+
+#: uc_epaybg.module:94;98 uc_epaybg.info:0
+msgid "ePay.bg"
+msgstr "ePay.bg"
+
+#: uc_epaybg.module:100
+msgid "Redirect users to submit payments through ePay.bg."
+msgstr "Препраща потребителите да извършат плащане чрез ePay.bg"
+
+#: uc_epaybg.module:126
+msgid "Unknown Transaction ID"
+msgstr "Неизвестен идентификатор на транзакция"
+
+#: uc_epaybg.module:128
+msgid "Transaction ID:<br />@txn_id"
+msgstr "Транзакция ID:<br />@txn_id"
+
+#: uc_epaybg.module:132
+msgid "Action URL"
+msgstr "Action URL"
+
+#: uc_epaybg.module:134
+msgid "The default action URL is: !url. If you want to test in demo mode use !demo_url."
+msgstr "По подразбиране action URL е: !url. Ако искате да тествате в ДЕМО режим го сменете на: !demo_url"
+
+#: uc_epaybg.module:141
+msgid "MIN"
+msgstr "MIN"
+
+#: uc_epaybg.module:143
+msgid "Merchant Identification Number (you must get this from your merchant account in ePay.bg)."
+msgstr "Идентификационен номер на търговец (MIN) - трябва да го вземете от акаунта си в ePay.bg."
+
+#: uc_epaybg.module:148
+msgid "Secret key"
+msgstr "Секретен ключ"
+
+#: uc_epaybg.module:150
+msgid "Secret key (you must get this from your merchant account in ePay.bg)."
+msgstr "Секретен ключ (взима се от акаунта в ePay.bg)."
+
+#: uc_epaybg.module:155
+msgid "Email"
+msgstr "Email"
+
+#: uc_epaybg.module:157
+msgid "Merchant email (as entered in your ePay.bg account)."
+msgstr "Email на търговец (както сте го въвели в ePay.bg)."
+
+#: uc_epaybg.module:162
+msgid "URL OK"
+msgstr ""
+
+#: uc_epaybg.module:164
+msgid "_uid_ = user id of current account."
+msgstr "_uid_ = ID-то на текущия потребител"
+
+#: uc_epaybg.module:168
+msgid "URL CANCEL"
+msgstr ""
+
+#: uc_epaybg.module:170
+msgid "Do not change this unless you know exactly what you are doing."
+msgstr "Не променяйте тази настройка освен ако не знаете точно какво правите."
+
+#: uc_epaybg.module:174
+msgid "URL DONE"
+msgstr ""
+
+#: uc_epaybg.module:177
+msgid "Paste this url in the field 'URL за известяване' in your ePay.bg merchant account."
+msgstr "Поставете този адрес в полето 'URL за известяване' в ePay.bg акаунта си."
+
+#: uc_epaybg.module:181
+msgid "Payment Expiration Time"
+msgstr "Крайна дата/час за плащане"
+
+#: uc_epaybg.module:183
+msgid "After how many hours should the payment request expire. 1440 hours are 2 months."
+msgstr "След колко часа да е крайната дата за плащане. 1440 часа са приблизително 2 месеца."
+
+#: uc_epaybg.module:187
+msgid "Currency"
+msgstr "Валута"
+
+#: uc_epaybg.module:194
+msgid "Currency in ePay.bg system."
+msgstr "Валута в системата на ePay.bg"
+
+#: uc_epaybg.module:198
+msgid "Rate to site currency"
+msgstr "Курс към тази валута"
+
+#: uc_epaybg.module:200
+msgid "Please enter ePay.bg rate according to site currency."
+msgstr "Моля въведете курса в съотсветствие с валутата на сайта."
+
+#: uc_epaybg.module:240
+msgid "Payment order number - %num, amount - %amount"
+msgstr "Плащане на поръчка номер - %num, сума - %amount"
+
+#: uc_epaybg.module:282
+msgid "Place your order"
+msgstr "Поръчвам"
+
+#: uc_epaybg.module:48
+msgid "ePay.bg payment done"
+msgstr "ePay.bg плащането е готово"
+
+#: uc_epaybg.module:56
+msgid "ePay.bg payment cancelled"
+msgstr "ePay.bg плащането е отхвърлено"
+
+#: uc_epaybg.install:18
+msgid "Logs ePay.bg payment transactions."
+msgstr ""
+
+#: uc_epaybg.install:21
+msgid "The order ID"
+msgstr ""
+
+#: uc_epaybg.install:28
+msgid "The transaction ID from ePay.bg"
+msgstr ""
+
+#: uc_epaybg.install:35
+msgid "The payment amount from ePay.bg"
+msgstr ""
+
+#: uc_epaybg.install:44
+msgid "The payment timestamp"
+msgstr ""
+
+#: uc_epaybg.install:51
+msgid "The description from ePay.bg"
+msgstr ""
+
+#: uc_epaybg.info:0
+msgid "Integrates ePay.bg payment services."
+msgstr "Интегрира ePay.bg система за разплащане."
+
+#: uc_epaybg.info:0
+msgid "Ubercart - payment"
+msgstr ""
+
