@@ -276,7 +276,7 @@ function theme_uc_epaybg_payment_method_title($title) {
 }
 
 /**
- * Define a replacement if the hash_hmac() function does not exists.
+ * Define a replacement if the function hash_hmac() does not exist.
  */
 function _get_hash_hmac() {
   $hash_hmac = 'hash_hmac';

@@ -28,15 +28,16 @@ function uc_epaybg_payment_done() {
     // Check if the received CHECKSUM is OK
 
     $data = base64_decode($ENCODED);
-
     $lines_arr = split("\n", $data);
     foreach ($lines_arr as $line) {
-     if (preg_match("/^INVOICE=(\d+):STATUS=(PAID|DENIED|EXPIRED)(:PAY_TIME=(\d+):STAN=(\d+):BCODE=([0-9a-zA-Z]+))?$/", $line, $regs)) {
-         $invoice  = $regs[1]; // order_id
-         $status   = $regs[2];
-         $pay_date = $regs[4]; // if PAID
-         $stan     = $regs[5]; // if PAID
-         $bcode    = $regs[6]; // if PAID
+      if (!empty(trim($line))) {
+        if (preg_match("/^INVOICE=(\d+):STATUS=(PAID|DENIED|EXPIRED)(:PAY_TIME=(\d+):STAN=(\d+):BCODE=([0-9a-zA-Z]+))?$/", $line, $regs)) {
+          $invoice  = $regs[1]; // order_id
+          $status   = $regs[2];
+          $pay_date = $regs[4]; // if PAID
+          $stan     = $regs[5]; // if PAID
+          $bcode    = $regs[6]; // if PAID
+        }
       }
     }
     if (isset($invoice) && $status == 'PAID') {
@@ -48,7 +49,7 @@ function uc_epaybg_payment_done() {
       $order = uc_order_load($invoice);
       $amount = $order->order_total * variable_get('uc_epaybg_rate', '1.00');
       if ($order === FALSE || uc_order_status_data($order->order_status, 'state') != 'in_checkout') {
-        echo "INVOICE:{$invoice}:STATUS=NO". PHP_EOL;
+        echo "INVOICE={$invoice}:STATUS=NO". PHP_EOL;
         exit();
       }
       $description = t(
@@ -94,5 +95,5 @@ function uc_epaybg_payment_cancel() {
     t('Your ePay.bg payment was cancelled. Please feel free to continue shopping or contact us for assistance.')
   );
 
-  drupal_goto(variable_get('uc_paypal_wps_cancel_return_url', 'cart'));
+  drupal_goto(variable_get('uc_epaybg_url_cancel', 'cart'));
 }
