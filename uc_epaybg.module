@@ -119,6 +119,14 @@ function uc_payment_method_epaybg($op, &$arg1) {
           array('!url' => UC_EPAYBG_ACTION_URL, '!demo_url' => UC_EPAYBG_ACTION_DEMO_URL)),
         '#required'       => TRUE,
       );
+      $form['uc_epaybg_page_type'] = array(
+        '#type'           => 'select',
+        '#title'          => t('Payment page type'),
+        '#default_value'  => variable_get('uc_epaybg_page_type', 'paylogin'),
+        '#description'    => t('Type of the page that a client will see when redirected to eBay.bg'),
+        '#required'       => TRUE,
+        '#options'        => uc_epaybg_get_payment_page_types(),
+      );
       $form['uc_epaybg_min'] = array(
         '#type'           => 'textfield',
         '#title'          => t('MIN'),
@@ -214,10 +222,11 @@ function uc_epaybg_submit_form(&$form_state, $order) {
     );
   }
 
+  $page_type  = variable_get('uc_epaybg_page_type', 'paylogin');  // Payment page type
   $secret     = variable_get('uc_epaybg_secret_key', ''); // Secret key
-  $min        = variable_get('uc_epaybg_min', '');        // Min (CIN in personal data of the merchant)
+  $min        = variable_get('uc_epaybg_min', '');        // Merchant Identification Number
   $email      = variable_get('uc_epaybg_email', '');      // Email
-  $invoice    = $order->order_id;                         // Invoice
+  $invoice    = $order->order_id;                         // Invoice Number
   $sum        = $amount;                                  // Ammount
   $exp_time   = time() + (variable_get('uc_epaybg_exp_date_hours', 1440) * 3600);
   $exp_date   = date('d.m.Y H:i:s', $exp_time);           // Expiration date
@@ -242,7 +251,7 @@ DATA;
   $CHECKSUM = $hash_hmac('sha1', $ENCODED, $secret);
   $form['PAGE'] = array(
     '#type' => 'hidden',
-    '#value' => 'paylogin',
+    '#value' => $page_type,
   );
   $form['ENCODED'] = array(
     '#type' => 'hidden',
@@ -267,6 +276,20 @@ DATA;
   );
 
   return $form;
+}
+
+/**
+ * Get supported payment page types
+ *
+ * @return array
+ */
+function uc_epaybg_get_payment_page_types() {
+  $types = array(
+    'paylogin'          => t('Standard'),
+    'credit_paydirect'  => t('Direct Credit Card'),
+  );
+
+  return $types;
 }
 
 function theme_uc_epaybg_payment_method_title($title) {
