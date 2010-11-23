@@ -2,9 +2,9 @@ ePay.bg payment module for Ubercart 6
 
 1. Installation
 -------------------------------------------------------------------------------
-Put the module (uc_epaybg) directory somewhere in sites/all/modules, for
-example in sites/all/modules/ubercart/payment/. Then go to admin/build/modules
-and enable the module.
+Download the module and extract it from the archive, somewhere in
+sites/all/modules, for example in sites/all/modules/ubercart/payment/.
+Then go to admin/build/modules and enable the module.
 
 2. Settings
 -------------------------------------------------------------------------------
@@ -25,7 +25,6 @@ you have to authorize and confirm the payment. After this step is completed
 you will be sent to your history of orders (user/_uid_/orders). If you refuse
 to pay you will be sent back to the page with your shopping cart.
 
-
 5. Authors:
 -------------------------------------------------------------------------------
 The original module (for Drupal 5) was contributed by Konstantin Viktorov
@@ -34,8 +33,9 @@ http://drupal.org/user/203339
 The version for Ubercart 2 (Drupal 6) was developed by Martin Martinov
 http://drupal.org/user/207484
 
-While porting the 5.x version to 6.x I've extended it a little bit. I've added
+While porting the 5.x version to 6.x I've extended it a little. I've added
 some response codes that now are sent to the ePay.bg server when it sends a
 notification for successful or canceled payment to yor server, as it is noted
 in the documentation provided by ePay. I have also used the paypal uberacrt
 module for reference and I'm plannig to add some more new features and tweaks.
+

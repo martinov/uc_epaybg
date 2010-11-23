@@ -18,6 +18,7 @@ function uc_epaybg_payment_done() {
   $CHECKSUM = $_POST['checksum'];
   
   if ((!isset($ENCODED)) || (!isset($CHECKSUM))) {
+    module_invoke_all('exit');
     exit();
   }
   // Secret word with which merchant make CHECKSUM on the ENCODED packet
@@ -30,7 +31,8 @@ function uc_epaybg_payment_done() {
     $data = base64_decode($ENCODED);
     $lines_arr = split("\n", $data);
     foreach ($lines_arr as $line) {
-      if (!empty(trim($line))) {
+      $line = trim($line);
+      if (!empty($line)) {
         if (preg_match("/^INVOICE=(\d+):STATUS=(PAID|DENIED|EXPIRED)(:PAY_TIME=(\d+):STAN=(\d+):BCODE=([0-9a-zA-Z]+))?$/", $line, $regs)) {
           $invoice  = $regs[1]; // order_id
           $status   = $regs[2];
@@ -40,7 +42,7 @@ function uc_epaybg_payment_done() {
         }
       }
     }
-    if (isset($invoice) && $status == 'PAID') {
+    if (isset($invoice) && $status === 'PAID') {
       /*
       $data = db_fetch_object(
         db_query("SELECT * FROM {uc_epaybg_transaction} WHERE txn_id = %d", $invoice)
@@ -48,8 +50,9 @@ function uc_epaybg_payment_done() {
       */
       $order = uc_order_load($invoice);
       $amount = $order->order_total * variable_get('uc_epaybg_rate', '1.00');
-      if ($order === FALSE || uc_order_status_data($order->order_status, 'state') != 'in_checkout') {
+      if ($order === FALSE || uc_order_status_data($order->order_status, 'state') !== 'in_checkout') {
         echo "INVOICE={$invoice}:STATUS=NO". PHP_EOL;
+        module_invoke_all('exit');
         exit();
       }
       $description = t(
@@ -97,3 +100,4 @@ function uc_epaybg_payment_cancel() {
 
   drupal_goto(variable_get('uc_epaybg_url_cancel', 'cart'));
 }
+

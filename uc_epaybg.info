@@ -3,5 +3,3 @@ name = "ePay.bg"
 description = "Integrates ePay.bg payment services."
 dependencies[] = uc_payment
 package = "Ubercart - payment"
-version = "6.x-1.x-dev"
-core = 6.x
